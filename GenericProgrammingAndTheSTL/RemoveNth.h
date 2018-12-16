@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cassert>
+
 // Example 2-3(d): Solving the problems
 //
 // Precondition:
@@ -8,7 +10,7 @@
 template<typename FwdIter>
 FwdIter removeNth(FwdIter first, FwdIter last, size_t n)
 {
-	assert(distance(first, last) >= n);
+	assert(distance(first, last) >= static_cast<typename std::iterator_traits<FwdIter>::difference_type>(n));
 
 	advance(first, n);
 	if (first != last)
