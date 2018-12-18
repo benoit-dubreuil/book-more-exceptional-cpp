@@ -7,6 +7,7 @@
 // Precondition:
 // - n must not exceed the size of the range
 //
+// The function distance(first, last) must be callable.
 template<typename FwdIter>
 FwdIter removeNth(FwdIter first, FwdIter last, size_t n)
 {
