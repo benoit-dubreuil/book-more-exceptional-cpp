@@ -23,5 +23,8 @@
     <ClInclude Include="RemoveNth.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IsDerivedFrom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
