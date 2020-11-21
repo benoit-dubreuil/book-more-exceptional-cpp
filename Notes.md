@@ -1,10 +1,16 @@
 # Notes
 
-- N'utiliser l'héritage publique que si la classe IS-A la classe parent. Aussi, n'utiliser que l'héritage publique afin d'être réutilisée.
-- Compiler firewall idiom est probablement la meilleure idée pour implémenter l'héritage privé.
-- Mettre `const` partout, sauf dans le retour de méthode, car c'est optimisé sans le `const`.
-- Faire ultra attention aux exceptions. Favoriser le swap et les copies temporaires et préférablement passer par copie les arguments, lorsque possible et utile. Utiliser le copy-and-swap idiom pour les classes.
-- Placement new crée un objet dans un espace mémoire déjà alloué avec l'opérateur new global.
-- Le destructeur doit absolument être `noexcept`!
-- Déclarer les constructeurs comme `explicit` afin d'éviter les conversions et les appels implicites non voulus.
-- L'argument-dependent lookup - Koenig lookup - permet de chercher des fonctions dans plus de scopes. Juste le fait de référencer un type en argument active l'ADL.
+- Ne jamais faire de function-try-block pour un constructeur, mis à part pour traduire l'exception et donc la relancer. Dans le catch d'un constructeur function-try-block, il est impossible d'accéder aux variables membres de l'objet (undefined behavior). Donc, faire 2 news séquentiels, dont le dernier qui lance une exception, dans l'initialisation d'un constructeur résulte en un memory leak, car les variables membres sont perdues pour toujours. La partie catch d'un constructeur ou destructeur function-try-block doit finir par le lancement d'une exception. Donc, je jamais faire de destructeur function-try-block.
+- Always perform unmanaged resource acquisition in the constructor body, never in initializer lists. In other words, either use "resource acquisition is initialization" (thereby avoiding unmanaged resources entirely) or else perform the resource acquisition in the constructor body.
+- Always clean up unmanaged resource acquisition in local try block handlers within the constructor or destructor body, never in constructor or destructor function try block handlers.
+- "What happens if you wrote an empty throw-specification on a constructor, and a base or member subobject constructor really does throw? The short answer: "Go to terminate(). Go directly to terminate(). Do not pass try, do not collect $200." The slightly longer answer: The function unexpected() gets called, which has two choices—to throw or rethrow an exception allowed by the exception specification (impossible, because it's empty and won't allow anything) or to call terminate(). terminate(), in turn, immediately aborts the program.[8] In automobile terms: screech, crunch." Il n'y a plus d'exception specifications (mis à part noexcept) en C++11.
+- Lancer une exception dans une fonction noexcept appelle la fonction std::terminate (+ std::unexpected avant C++17).
+- Basic guarantee: If an exception is thrown, no resources are leaked, and objects remain in a destructible and usable, but not necessarily predictable, state. This is the weakest usable level of exception safety and is appropriate when calling code can cope with failed operations that have already made changes to objects' states.
+- Strong guarantee: If an exception is thrown, program state remains unchanged. This level always implies commit-or-rollback semantics, including that no references or iterators into a container be invalidated if an operation fails.
+- If a relationship can be expressed in more than one way, use the weakest relationship that's practical.
+- Pour retourner à partir d'un fonction un pointeur de cette même fonction, créer une class locale proxy avec un typedef et l'opérateur (). Avec du C++ moderne, je pense qu'il est possible de templatiser ça.
+- A local or unnamed class cannot be used as a template parameter.
+- Définir une variable en appelant spécifiquement et directement le constructeur par défaut définit une fonction. Par exemple `T t();`. Il faut plutôt faire ceci : `T t;`, qui fait ce qui était voulu à l'origine. Par contre, s'il y a au moins 1 paramètre et que les paramètres ne sont pas des types, alors ça l'appel le constructeur de conversion voulu.
+- Prefer using the form "T t(u)" over "T t = u" for variable initialization. Ça l'empêche la création implicite d'objets temporaires qui dépendent de constructeurs. Ça dépend du compilateur si un objet temporaire est créé.
+- Reinterpret, dynamic and const casts create references; there are no initializations. Static cast uses a direct initialization.
+- In general, prefer to catch exceptions by reference, not by value, to avoid making extra copies and to eliminate potential object slicing.
